@@ -7,6 +7,17 @@ To address the weaknesses of both these methods, automatic differentiation (AD) 
 # Background
 All numerical computation can be seen as a combination of elementary operations for which the derivatives are known. The derivatives of the overall composition can be found by combining the derivatives of elementary operations through the chain rule. Such elementary functions include arithmetic operations (addition, subtraction, multiplication, division), sign switch, and functions such as exponential, logarithm, and the trigonometric (e.g. $sin$, $cos$). Traces of these elementary operations can be represented by a trace table or a computational graph. Trace table are originally used to trace the value of variables as each line of code is executed. As an example of this flow, Table 1 shows the evaluation trace of elementary operations of the computation $f(x_1) = ln(x_1) + 3*x_1$ and Figure 1 gives an example of a graphic representation of function $f(x_1)$ by its elementary operations. 
 
+### Table 1
+
+| Trace       | Elementary function | Current Function Value | Function Derivative |
+| ------------- |:-------------:|:-------------:|:-------------:|
+| X1      | X1            |  c             | 1  |
+| X2      | ln(X1)            | ln(c)      | 1/c |
+| X3      | 3 * X1            |  3c        | 3   |
+| X4      | X2 + X3             | ln(c) + 3c | 1/c + 3 |
+
+![Figure 1](https://github.com/we-the-diff/cs207-FinalProject/blob/milestone1/docs/sample_trace_graph.png)
+
 
 The forward mode of AD starts from the input value and compute the derivative of intermediate variables with respect to the input value. Applying the chain rule to each elementary operation in the forward primal trace, we generate the corresponding derivative trace, which gives us the derivative in the final variable. Forward  mode AD can also be viewed as evaluating a function using dual numbers, which are defined as # $a+b\epsilon$, where $a, b \in \mathbf{R}$ and $\epsilon$ is a nilpotent number such that $\epsilon^2 = 0$ and $\epsilon \neq 0$. It can be shown that the coefficient of $\epsilon$ after evaluating a function is exactly the derivative of that function, which also works for chain rule.
 
