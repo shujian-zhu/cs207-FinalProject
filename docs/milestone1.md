@@ -40,7 +40,6 @@ The package will have the following directory structure:
     - \__init\__.py
     - forward_mode.py
     - elementary_functions.py
-    - reverse_mode.py
     - application_AD.py
 
 The package uses standard .py standalone files and setup.py for package installation; it will be also distributed through conda.
