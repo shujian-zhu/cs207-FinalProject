@@ -17,6 +17,11 @@ class AutoDiff1():
 		self.val = a
 		self.der = 1
 
+	def __neg__(self):
+		result = AutoDiff1(-1*self.val)
+		result.der = -1*self.der
+		return result
+
 	def __radd__(self, other):
 		return AutoDiff1.__add__(self, other)
 
@@ -132,7 +137,7 @@ class AutoDiff1():
 
 #demo
 
-ad1 = AD('2*x**2 + 3*x + 5', 'x', 2)
+ad1 = AD('-x**3 + 2*x**2 + 3*x + 5', 'x', 2)
 print("val: ",ad1.val,"\nder: ", ad1.der)
 
 # a = 2.0 
