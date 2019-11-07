@@ -156,10 +156,10 @@ class AutoDiff1():
 ad1 = AD('-x**3 + 2*x**2 + 3*x + 5', 'x', 2)
 print("val: ",ad1.val,"\nder: ", ad1.der)
 
-a = 2.0 
-x = AutoDiff1(a)
-f = x.tan()
-print(f.val, f.der)
+# a = 2.0 
+# x = AutoDiff1(a)
+# f = x.tan()
+# print(f.val, f.der)
 
 # a = 2.0 
 # x = AutoDiff1(a)
