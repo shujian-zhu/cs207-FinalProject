@@ -134,11 +134,32 @@ class AutoDiff1():
 			print ("this function does not allow user to pass any inputs. Try x = AutoDiff1(10); x.sin()")
 
 
+	def cos(self):
+		try:
+			result = AutoDiff1(math.cos(self.val))
+			result.der = -1 * math.sin(self.val) * self.der
+			return result
+		except AttributeError:
+			print ("this function does not allow user to pass any inputs. Try x = AutoDiff1(10); x.cos()")
+
+
+	def tan(self):
+		try:
+			result = AutoDiff1(math.tan(self.val))
+			result.der = self.der / math.cos(self.val)**2
+			return result
+		except AttributeError:
+			print ("this function does not allow user to pass any inputs. Try x = AutoDiff1(10); x.cos()")
 
 #demo
 
 ad1 = AD('-x**3 + 2*x**2 + 3*x + 5', 'x', 2)
 print("val: ",ad1.val,"\nder: ", ad1.der)
+
+a = 2.0 
+x = AutoDiff1(a)
+f = x.tan()
+print(f.val, f.der)
 
 # a = 2.0 
 # x = AutoDiff1(a)
