@@ -55,6 +55,8 @@ class AD():
 class AD_Object():
 
     def __init__(self, init_value):
+        if (not isinstance(init_value, int)) and (not isinstance(init_value, float)):
+            raise TypeError('input value must be numeric')
         self.val = init_value
         self.der = 1
 
