@@ -48,12 +48,18 @@ class AD():
         self.f = eval(func_string.replace(self.var_label, 'self.x'))
         self.der = self.f.der
         self.val = self.f.val
+    
+    def __repr__(self):
+        return "AD Object: Value = %.3f, Derivative =%.3f"%(self.val, self.der)
 
 class AD_Object():
 
     def __init__(self, a):
         self.val = a
         self.der = 1
+
+    def __repr__(self):
+        return "AD Object: Value = %.3f, Derivative =%.3f"%(self.val, self.der)
 
     def __neg__(self):
         result = AD_Object(-1*self.val)
