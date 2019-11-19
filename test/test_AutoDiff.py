@@ -1,6 +1,6 @@
 import math
 import pytest
-from ADclass import AutoDiff as ad
+from AutoDiff import AutoDiff_Class as ad
 
 def test_negation():
     ad1 = ad.AD('-x', "x", 2)
