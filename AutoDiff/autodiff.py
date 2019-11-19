@@ -31,18 +31,18 @@ def tan(x):
 
 
 class AD():
-    def __init__(self, func_string, variable, a):
+    def __init__(self, func_string, variable_label, init_value):
         if type(func_string) != str:
             raise TypeError('input function must be a string')
-        if type(variable) != str:
+        if type(variable_label) != str:
             raise TypeError('variable name must be a string')
-        if (not isinstance(a, int)) and (not isinstance(a, float)):
+        if (not isinstance(init_value, int)) and (not isinstance(init_value, float)):
             raise TypeError('input value must be numeric')
-        self.var_label = variable
+        self.var_label = variable_label
         self.func_label = func_string
-        self.a = a
+        self.init_value = init_value
 
-        self.x = AD_Object(self.a)
+        self.x = AD_Object(self.init_value)
         if 'eself.xp' in func_string.replace(self.var_label, 'self.x'):
             raise NameError('Please use e(x) instead of exp(x) for exponential function')
         self.f = eval(func_string.replace(self.var_label, 'self.x'))
@@ -54,8 +54,8 @@ class AD():
 
 class AD_Object():
 
-    def __init__(self, a):
-        self.val = a
+    def __init__(self, init_value):
+        self.val = init_value
         self.der = 1
 
     def __repr__(self):
