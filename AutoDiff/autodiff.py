@@ -31,60 +31,68 @@ def tan(x):
 
 
 class AD():
-    def __init__(self, func_string, variable, a):
+    def __init__(self, func_string, variable_label, init_value):
         if type(func_string) != str:
             raise TypeError('input function must be a string')
-        if type(variable) != str:
+        if type(variable_label) != str:
             raise TypeError('variable name must be a string')
-        if (not isinstance(a, int)) and (not isinstance(a, float)):
+        if (not isinstance(init_value, int)) and (not isinstance(init_value, float)):
             raise TypeError('input value must be numeric')
-        self.var_label = variable
+        self.var_label = variable_label
         self.func_label = func_string
-        self.a = a
+        self.init_value = init_value
 
-        self.x = AutoDiff1(self.a)
+        self.x = AD_Object(self.init_value)
         if 'eself.xp' in func_string.replace(self.var_label, 'self.x'):
             raise NameError('Please use e(x) instead of exp(x) for exponential function')
         self.f = eval(func_string.replace(self.var_label, 'self.x'))
         self.der = self.f.der
         self.val = self.f.val
+    
+    def __repr__(self):
+        return "AD Object: Value = %.3f, Derivative =%.3f"%(self.val, self.der)
 
-class AutoDiff1():
+class AD_Object():
 
-    def __init__(self, a):
-        self.val = a
+    def __init__(self, init_value):
+        if (not isinstance(init_value, int)) and (not isinstance(init_value, float)):
+            raise TypeError('input value must be numeric')
+        self.val = init_value
         self.der = 1
 
+    def __repr__(self):
+        return "AD Object: Value = %.3f, Derivative =%.3f"%(self.val, self.der)
+
     def __neg__(self):
-        result = AutoDiff1(-1*self.val)
+        result = AD_Object(-1*self.val)
         result.der = -1*self.der
         return result
 
     def __radd__(self, other):
-        return AutoDiff1.__add__(self, other)
+        return AD_Object.__add__(self, other)
 
     def __add__(self, other):
         try:
-            result = AutoDiff1(self.val+other.val)
+            result = AD_Object(self.val+other.val)
             result.der = self.der + other.der
             return result	
         except AttributeError:
-            result = AutoDiff1(self.val+other)
+            result = AD_Object(self.val+other)
             result.der = self.der
             return result
 
     def __rsub__(self, other):
-        result = AutoDiff1(other - self.val)
+        result = AD_Object(other - self.val)
         result.der = -self.der
         return result
 
     def __sub__(self, other):
         try:
-            result = AutoDiff1(self.val-other.val)
+            result = AD_Object(self.val-other.val)
             result.der = self.der - other.der
             return result	
         except AttributeError:
-            result = AutoDiff1(self.val-other)
+            result = AD_Object(self.val-other)
             result.der = self.der
             return result
 
@@ -92,15 +100,15 @@ class AutoDiff1():
         return other.val*self.der + self.val*other.der
 
     def __rmul__(self, other):
-        return AutoDiff1.__mul__(self, other)
+        return AD_Object.__mul__(self, other)
 
     def __mul__(self, other):
         try: # when both self and other are autodiff object, we implement the product rule
-            result = AutoDiff1(self.val*other.val)
+            result = AD_Object(self.val*other.val)
             result.der = self.productrule(other)
             return result
         except: #when other is a constant, not an autodiff object, we simply multiply them
-            result = AutoDiff1(other*self.val)
+            result = AD_Object(other*self.val)
             result.der = other*self.der
             return result
 
@@ -111,13 +119,13 @@ class AutoDiff1():
         try:
             if other.val == 0:
                 raise ValueError('Cannot divide by 0')                
-            result = AutoDiff1(self.val/other.val)
+            result = AD_Object(self.val/other.val)
             result.der = self.quotientrule(other) #when both self and other are autodiff object, implement the quotient rule
             return result
         except AttributeError: #when other is a constant, e.g. f(x) = x/2 -> f'(x) = x'/2 = 1/2
             if other == 0:
                 raise ValueError('Cannot divide by 0')    
-            result = AutoDiff1(self.val/other)
+            result = AD_Object(self.val/other)
             result.der = self.der / other
             return result
 
@@ -125,7 +133,7 @@ class AutoDiff1():
         #when other is a constant, e.g. f(x) = 2/x = 2*x^-1 -> f'(x) =  -2/(x^-2)
         if self.val == 0:
             raise ValueError('Cannot divide by 0')         
-        result = AutoDiff1(other / self.val)
+        result = AD_Object(other / self.val)
         result.der = (-other * self.der)/(self.val**2)
         return result 
 
@@ -138,17 +146,17 @@ class AutoDiff1():
 
     def __pow__(self, other):
         try: 
-            result = AutoDiff1(self.val**other.val)
+            result = AD_Object(self.val**other.val)
             result.der = self.powerrule(other) # when both self and other are autodiff object, implement the powerrule
             return result
         except AttributeError: # when the input for 'other' is a constant
-            result = AutoDiff1(self.val**other)
+            result = AD_Object(self.val**other)
             result.der = other * (self.val ** (other-1)) * self.der
             return result
 
     def __rpow__(self, other):
         #when other is a constant, e.g. f(x) = 2^x -> f'(x) =  2^x * ln(2)
-        result = AutoDiff1(other**self.val)
+        result = AD_Object(other**self.val)
         if other == 0:
             result.der = 0
             return result
@@ -156,7 +164,7 @@ class AutoDiff1():
         return result
 
     def exp(self):
-        result = AutoDiff1(math.exp(self.val))
+        result = AD_Object(math.exp(self.val))
         result.der = math.exp(self.val) * self.der
         return result
 
@@ -164,75 +172,24 @@ class AutoDiff1():
     def ln(self):
         if (self.val) <= 0:
             raise ValueError('log only takes positive number')
-        result = AutoDiff1(math.log(self.val))
+        result = AD_Object(math.log(self.val))
         result.der = 1/self.val
         return result
 
 
     def sin(self):
-            result = AutoDiff1(math.sin(self.val))
+            result = AD_Object(math.sin(self.val))
             result.der = math.cos(self.val) * self.der
             return result
 
 
     def cos(self):
-            result = AutoDiff1(math.cos(self.val))
+            result = AD_Object(math.cos(self.val))
             result.der = -1 * math.sin(self.val) * self.der
             return result
 
 
     def tan(self):
-            result = AutoDiff1(math.tan(self.val))
+            result = AD_Object(math.tan(self.val))
             result.der = self.der / math.cos(self.val)**2
             return result
-
-#demo
-
-# ad1 = AD('-x**3 + 2*x**2 + 3*x + 5', 'x', 2)
-# print("val: ",ad1.val,"\nder: ", ad1.der)
-
-# a = 2.0 
-# x = AutoDiff1(a)
-# f = x.tan()
-# print(f.val, f.der)
-
-# a = 2.0 
-# x = AutoDiff1(a)
-# print(x.val, x.der)
-
-# f1 = 2*x + 3
-# print("2*x + 3")
-# print(f1.val, f1.der)
-
-# f2 = 3*x
-# print("3*x")
-# print(f2.val, f2.der)
-
-# f3 = f1+f2
-# print("2*x + 3 + 3*x")
-# print(f3.val, f3.der)
-
-# f4 = f2 - 3
-# print("3*x - 3")
-# print(f4.val, f4.der)
-
-# f5 = x / 2
-# print("x/2")
-# print(f5.val, f5.der)
-
-# f6 = 2*x**3
-# print("2*x**3")
-# print(f6.val, f6.der)
-
-# f7 = (x**2).exp()
-# print("x**2.exp()")
-# print(f7.val, f7.der) 
-
-# f7 = 2/x
-# print("2/x")
-# print(f7.val, f7.der) 
-
-# f8 = x**f2
-# print("x^(3x)")
-# print(f8.val, f8.der)
-
