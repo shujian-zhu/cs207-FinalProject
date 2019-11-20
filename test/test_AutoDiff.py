@@ -126,3 +126,19 @@ def test_ln_with_negative():
 def test_exponential_function_name():
     with pytest.raises(NameError):
         ad.AD('3*ln(5)/exp(x)', 'x', 3)
+
+def test_input_AD_Object():
+    with pytest.raises(TypeError):
+        ad.AD_Object('1')
+
+def test_repr_AD():
+    ad1 = repr(ad.AD('x', 'x', 1))
+    val = 1
+    der = 1
+    assert ad1 == "AD Object: Value = %.3f, Derivative =%.3f"%(val, der)
+
+def test_repr_AD_Object():
+    ad1 = repr(ad.AD_Object(1))
+    val = 1
+    der = 1
+    assert ad1 == "AD Object: Value = %.3f, Derivative =%.3f"%(val, der)
