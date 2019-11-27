@@ -29,7 +29,6 @@ def tan(x):
         return x.tan()
     
 
-
 class AD():
     def __init__(self, func_string, variable_label, init_value):
         if type(func_string) != str:
@@ -52,144 +51,180 @@ class AD():
     def __repr__(self):
         return "AD Object: Value = %.3f, Derivative =%.3f"%(self.val, self.der)
 
+
 class AD_Object():
 
-    def __init__(self, init_value):
-        if (not isinstance(init_value, int)) and (not isinstance(init_value, float)):
+    def __init__(self, value, label, der_initial=1):
+        self.val = value 
+        if isinstance(label, dict):
+            self.label = label
+            self.der = der_initial
+        elif isinstance(value, int) or (isinstance(value, float)):
+            self.label = {label: label}
+            self.der = {label: der_initial}
+        else:
             raise TypeError('input value must be numeric')
-        self.val = init_value
-        self.der = 1
+
 
     def __repr__(self):
-        return "AD Object: Value = %.3f, Derivative =%.3f"%(self.val, self.der)
+        der_txt = ["d(%s)= %.3f ; "%(k, self.der[k]) for k in self.der]
+        return "AD Object: Value = %.3f, Derivative: %s"%(self.val, "".join(der_txt))
+
 
     def __neg__(self):
-        result = AD_Object(-1*self.val)
-        result.der = -1*self.der
-        return result
+        return AD_Object(-1*self.val, self.label, {k: (-1*self.der[k]) for k in self.der})
+
 
     def __radd__(self, other):
         return AD_Object.__add__(self, other)
 
+
     def __add__(self, other):
-        try:
-            result = AD_Object(self.val+other.val)
-            result.der = self.der + other.der
-            return result	
-        except AttributeError:
-            result = AD_Object(self.val+other)
-            result.der = self.der
-            return result
+        if isinstance(other, AD_Object):
+            value = self.val + other.val
+            der = dict()
+            label = dict()
+            for key in self.der:
+                der[key] = (self.der[key] + other.der[key]) if (key in other.der) else self.der[key]
+                label[key] = self.label[key] 
+            for key in other.der:
+                if key not in der:
+                    der[key] =  other.der[key]  
+                    label[key] = other.label[key]
+            return AD_Object(value, label, der)
+        #-----
+        return AD_Object(self.val+other, self.label, self.der)
+
 
     def __rsub__(self, other):
-        result = AD_Object(other - self.val)
-        result.der = -self.der
-        return result
+        return AD_Object(other-self.val, self.label, {k: -1*self.der[k] for k in self.der})
+
 
     def __sub__(self, other):
-        try:
-            result = AD_Object(self.val-other.val)
-            result.der = self.der - other.der
-            return result	
-        except AttributeError:
-            result = AD_Object(self.val-other)
-            result.der = self.der
-            return result
+        if isinstance(other, AD_Object):
+            value = self.val - other.val
+            der = dict()
+            label = dict()
+            for key in self.der:
+                der[key] = (self.der[key] - other.der[key]) if (key in other.der) else self.der[key]
+                label[key] = self.label[key] 
+            for key in other.der:
+                if key not in der:
+                    der[key] =  other.der[key]  
+                    label[key] = other.label[key]
+            return AD_Object(value, label, der)
+        #-----
+        return AD_Object(self.val-other, self.label, self.der)
 
-    def productrule(self,other): # both self and other are autodiff objects
-        return other.val*self.der + self.val*other.der
+
+    def productrule(self, other, key): # both self and other are autodiff objects
+        return (other.val*self.der[key] + self.val*other.der[key]) if (key in other.der) else (other.val*self.der[key])
+
 
     def __rmul__(self, other):
         return AD_Object.__mul__(self, other)
 
-    def __mul__(self, other):
-        try: # when both self and other are autodiff object, we implement the product rule
-            result = AD_Object(self.val*other.val)
-            result.der = self.productrule(other)
-            return result
-        except: #when other is a constant, not an autodiff object, we simply multiply them
-            result = AD_Object(other*self.val)
-            result.der = other*self.der
-            return result
 
-    def quotientrule(self,other): # both self and other are autodiff objects, and the function is self / other
-        return (other.val*self.der - self.val*other.der)/(other.val**2)
+    def __mul__(self, other):
+        if isinstance(other, AD_Object):
+            value = self.val * other.val
+            der = dict()
+            label = dict()
+            for key in self.der:
+                der[key] = self.productrule(other, key)
+                label[key] = self.label[key] 
+            for key in other.der:
+                if key not in der:
+                    der[key] =  other.productrule(self, key)  
+                    label[key] = other.label[key]
+            return AD_Object(value, label, der)
+        #-----
+        return AD_Object(other*self.val, self.label, {k: other*self.der[k] for k in self.der})
+
+
+    def quotientrule(self, other, key): # both self and other are autodiff objects, and the function is self / other
+        return ((other.val*self.der[key] - self.val*other.der[key])/(other.val**2)) if (key in other.der) else (self.der[key]/other.val)
+
 
     def __truediv__(self, other):
-        try:
-            if other.val == 0:
-                raise ValueError('Cannot divide by 0')                
-            result = AD_Object(self.val/other.val)
-            result.der = self.quotientrule(other) #when both self and other are autodiff object, implement the quotient rule
-            return result
-        except AttributeError: #when other is a constant, e.g. f(x) = x/2 -> f'(x) = x'/2 = 1/2
-            if other == 0:
-                raise ValueError('Cannot divide by 0')    
-            result = AD_Object(self.val/other)
-            result.der = self.der / other
-            return result
+        if other.val == 0:
+            raise ValueError('Cannot divide by 0')                
+
+        if isinstance(other, AD_Object):
+            value = self.val/other.val
+            der = dict()
+            label = dict()
+            for key in self.der:
+                der[key] = self.quotientrule(other, key)
+                label[key] = self.label[key] 
+            for key in other.der:
+                if key not in der:
+                    der[key] = ((-self.val * other.der[key])/(other.val**2))  
+                    label[key] = other.label[key]
+            return AD_Object(value, label, der)
+        #-----
+        if other == 0:
+            raise ValueError('Cannot divide by 0')  
+        return AD_Object(self.val/other, self.label, {k: self.der[k]/other for k in self.der})
 
     def __rtruediv__(self, other):
         #when other is a constant, e.g. f(x) = 2/x = 2*x^-1 -> f'(x) =  -2/(x^-2)
         if self.val == 0:
             raise ValueError('Cannot divide by 0')         
-        result = AD_Object(other / self.val)
-        result.der = (-other * self.der)/(self.val**2)
-        return result 
+        return AD_Object(other/self.val, self.label, {k: ((-other * self.der[k])/(self.val**2)) for k in self.der}) 
 
-    def powerrule(self,other):
+
+    def powerrule(self, other, key):
         # for when both self and other are autodiff objects
         # in general, if f(x) = u(x)^v(x) -> f'(x) = u(x)^v(x) * [ln(u(x)) * v(x)]'
         if self.val == 0:
             return 0            
-        return self.val**other.val * other.productrule(self.ln())
+        return self.val**other.val * other.productrule(self.ln(), key)
+
 
     def __pow__(self, other):
-        try: 
-            result = AD_Object(self.val**other.val)
-            result.der = self.powerrule(other) # when both self and other are autodiff object, implement the powerrule
-            return result
-        except AttributeError: # when the input for 'other' is a constant
-            result = AD_Object(self.val**other)
-            result.der = other * (self.val ** (other-1)) * self.der
-            return result
+        # when both self and other are autodiff object, implement the powerrule
+        if isinstance(other, AD_Object):
+            value = self.val**other.val
+            der = dict()
+            label = dict()
+            for key in self.der:
+                der[key] = self.powerrule(other, key)
+                label[key] = self.label[key] 
+            for key in other.der:
+                if key not in der:
+                    der[key] =  other.powerrule(self, key)
+                    label[key] = other.label[key]
+            return AD_Object(value, label, der)
+        # when the input for 'other' is a constant
+        return AD_Object(self.val**other, self.label, {k: (other * (self.val ** (other-1)) * self.der[k]) for k in self.der})
+
 
     def __rpow__(self, other):
-        #when other is a constant, e.g. f(x) = 2^x -> f'(x) =  2^x * ln(2)
-        result = AD_Object(other**self.val)
+        # when other is a constant, e.g. f(x) = 2^x -> f'(x) =  2^x * ln(2)
         if other == 0:
-            result.der = 0
-            return result
-        result.der = other**self.val * math.log(other) * self.der
-        return result
+            AD_Object(self.val**other, self.label, {k: 0*self.der[k] for k in self.der})
+        #------
+        return AD_Object(self.val**other, self.label, {k: (other**self.val * math.log(other) * self.der[k]) for k in self.der})
+
 
     def exp(self):
-        result = AD_Object(math.exp(self.val))
-        result.der = math.exp(self.val) * self.der
-        return result
+        return AD_Object(math.exp(self.val), self.label, {k: (math.exp(self.val) * self.der[k]) for k in self.der})
 
 
     def ln(self):
         if (self.val) <= 0:
             raise ValueError('log only takes positive number')
-        result = AD_Object(math.log(self.val))
-        result.der = 1/self.val
-        return result
+        return AD_Object(math.log(self.val), self.label, {k: ((1/self.val)*self.der[k]) for k in self.der})
 
 
     def sin(self):
-            result = AD_Object(math.sin(self.val))
-            result.der = math.cos(self.val) * self.der
-            return result
+        return AD_Object(math.sin(self.val), self.label, {k: (math.cos(self.val) * self.der[k]) for k in self.der})
 
 
     def cos(self):
-            result = AD_Object(math.cos(self.val))
-            result.der = -1 * math.sin(self.val) * self.der
-            return result
+        return AD_Object(math.cos(self.val), self.label, {k: (-1 * math.sin(self.val) * self.der[k]) for k in self.der})
 
 
     def tan(self):
-            result = AD_Object(math.tan(self.val))
-            result.der = self.der / math.cos(self.val)**2
-            return result
+        return AD_Object(math.tan(self.val), self.label, {k: (self.der[k] / math.cos(self.val)**2) for k in self.der})
