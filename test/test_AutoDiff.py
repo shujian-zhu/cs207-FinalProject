@@ -129,7 +129,7 @@ def test_exponential_function_name():
 
 def test_input_AD_Object():
     with pytest.raises(TypeError):
-        ad.AD_eval_Object('1')
+        ad.AD_Object('1')
 
 # def test_repr_AD():
 #     ad1 = repr(ad.AD_eval('x', 'x', 1))
@@ -138,7 +138,7 @@ def test_input_AD_Object():
 #     assert ad1 == "AD Object: Value = %.3f, Derivative =%.3f"%(val, der)
 
 # def test_repr_AD_Object():
-#     ad1 = repr(ad.AD_eval_Object(1))
+#     ad1 = repr(ad.AD_Object(1))
 #     val = 1
 #     der = 1
 #     assert ad1 == "AD Object: Value = %.3f, Derivative =%.3f"%(val, der)
