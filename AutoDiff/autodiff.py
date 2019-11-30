@@ -358,3 +358,9 @@ class AD_Object():
 
     def tanh(self):
         return AD_Object(math.tanh(self.val), self.label, {k: ((2 / (1 + math.cosh(2*self.val))) * self.der[k]) for k in self.der})
+
+    def sigmoid(self, b_0=1, b_1=1):
+        def calc_s(x, b_0, b_1):
+            # Sigmoid/Logisitic = 1 / 1 + exp(- (b_0 + b_1*x))
+            return (1 / (1+math.exp(-(b_0 + b_1*x))))
+        return AD_Object(calc_s(self.val, b_0, b_1), self.label, {k: (calc_s(self.val, b_0, b_1)*(1-calc_s(self.val, b_0, b_1))) * self.der[k]) for k in self.der})
