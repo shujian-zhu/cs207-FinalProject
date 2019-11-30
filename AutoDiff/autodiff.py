@@ -75,6 +75,9 @@ def log(x, base):
     except:
         return x.log(base)
 
+def sigmoid(x, b_0=0, b_1=1):
+    return x.sigmoid(b_0, b_1)
+
 
 #=====================================AD_eval=====================================================#
 
@@ -363,4 +366,4 @@ class AD_Object():
         def calc_s(x, b_0, b_1):
             # Sigmoid/Logisitic = 1 / 1 + exp(- (b_0 + b_1*x))
             return (1 / (1+math.exp(-(b_0 + b_1*x))))
-        return AD_Object(calc_s(self.val, b_0, b_1), self.label, {k: (calc_s(self.val, b_0, b_1)*(1-calc_s(self.val, b_0, b_1))) * self.der[k]) for k in self.der})
+        return AD_Object(calc_s(self.val, b_0, b_1), self.label, {k: ((calc_s(self.val, b_0, b_1)*(1-calc_s(self.val, b_0, b_1))) * self.der[k]) for k in self.der})
