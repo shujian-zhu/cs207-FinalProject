@@ -138,7 +138,10 @@ class AD_eval():
 
 def AD_Vector(values, label):
     assert hasattr(values, '__iter__'), "Input values must be iterable"
-    return np.array([AD_Object(float(val), label) for val in values])
+    if type(label)==str :
+        return np.array([AD_Object(float(val), label) for val in values])
+    else :
+        return np.array([AD_Object(float(val), label[i]) for i,val in enumerate(values)])
 
 def value(x):
     if isinstance(x, AD_Object):
@@ -154,6 +157,24 @@ def derivative(x, label):
         return x.der[label]
     elif hasattr(x, '__iter__'):
         return np.array([k.der[label] for k in x])
+    else:
+        raise TypeError ("Input must be AD_Object or array of AD_Objects")
+
+def jacobian(x,label):
+    if isinstance(x, AD_Object):
+        return x.der
+    elif hasattr(x, '__iter__'):
+        jacob=[]
+        for k in x :
+            df_i = []
+            for l in label :
+                try :
+                    df_i.append(k.der[l])
+                except :
+                    df_i.append(0)
+            jacob.append(np.array(df_i))
+        return np.array(jacob)
+
     else:
         raise TypeError ("Input must be AD_Object or array of AD_Objects")
 
