@@ -260,10 +260,11 @@ class AD_Object():
         return ((other.val*self.der[key] - self.val*other.der[key])/(other.val**2)) if (key in other.der) else (self.der[key]/other.val)
 
     def __truediv__(self, other):
-        if other.val == 0:
-            raise ValueError('Cannot divide by 0')                
-
+               
         if isinstance(other, AD_Object):
+            if other.val == 0:
+                raise ValueError('Cannot divide by 0') 
+
             value = self.val/other.val
             der = dict()
             label = dict()
