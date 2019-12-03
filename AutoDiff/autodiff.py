@@ -314,9 +314,9 @@ class AD_Object():
     def __rpow__(self, other):
         # when other is a constant, e.g. f(x) = 2^x -> f'(x) =  2^x * ln(2)
         if other == 0:
-            AD_Object(self.val**other, self.label, {k: 0*self.der[k] for k in self.der})
+            AD_Object(other**self.val, self.label, {k: 0*self.der[k] for k in self.der})
         #------
-        return AD_Object(self.val**other, self.label, {k: (other**self.val * math.log(other) * self.der[k]) for k in self.der})
+        return AD_Object(other**self.val, self.label, {k: (other**self.val * math.log(other) * self.der[k]) for k in self.der})
 
     def sqrt(self):
         return AD_Object(math.sqrt(self.val), self.label, {k: ( (1 / (2*math.sqrt(self.val)) ) * self.der[k]) for k in self.der})
@@ -409,4 +409,4 @@ class AD_Object():
     def __ge__(self, other): #this only compares the function value
         assert isinstance(other, AD_Object), "Input must be an AD_object"
         return (self.val >= other.val)
-
+        
