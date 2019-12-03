@@ -314,7 +314,7 @@ class AD_Object():
     def __rpow__(self, other):
         # when other is a constant, e.g. f(x) = 2^x -> f'(x) =  2^x * ln(2)
         if other == 0:
-            AD_Object(other**self.val, self.label, {k: 0*self.der[k] for k in self.der})
+            return AD_Object(other**self.val, self.label, {k: 0*self.der[k] for k in self.der})
         #------
         return AD_Object(other**self.val, self.label, {k: (other**self.val * math.log(other) * self.der[k]) for k in self.der})
 
