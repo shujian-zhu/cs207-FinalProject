@@ -409,4 +409,3 @@ class AD_Object():
     def __ge__(self, other): #this only compares the function value
         assert isinstance(other, AD_Object), "Input must be an AD_object"
         return (self.val >= other.val)
-        
