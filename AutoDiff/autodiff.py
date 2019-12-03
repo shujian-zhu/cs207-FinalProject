@@ -367,3 +367,45 @@ class AD_Object():
             # Sigmoid/Logisitic = 1 / 1 + exp(- (b_0 + b_1*x))
             return (1 / (1+math.exp(-(b_0 + b_1*x))))
         return AD_Object(calc_s(self.val, b_0, b_1), self.label, {k: ((calc_s(self.val, b_0, b_1)*(1-calc_s(self.val, b_0, b_1))) * self.der[k]) for k in self.der})
+
+    def __eq__(self, other):
+        assert isinstance(other, AD_Object), "Input must be an AD_object"
+        
+        #check function value
+        if self.val != other.val: 
+            return False
+
+        #check input variable ('label')
+        self_label = list(set(sorted(self.label.keys())))
+        other_label = list(set(sorted(other.label.keys())))
+        for k in range(len(self_label)):
+            if (self_label[k] != other_label[k]):
+                return False
+
+        #check derivative of each input variable
+        for k in self_label:
+            if self.der[k] != other.der[k]:
+                return False
+
+        #if it passed all the checks above, return True
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other): #this only compares the function value
+        assert isinstance(other, AD_Object), "Input must be an AD_object"
+        return (self.val < other.val)
+
+    def __gt__(self, other): #this only compares the function value
+        assert isinstance(other, AD_Object), "Input must be an AD_object"
+        return (self.val > other.val)
+
+    def __le__(self, other): #this only compares the function value
+        assert isinstance(other, AD_Object), "Input must be an AD_object"
+        return (self.val <= other.val)
+
+    def __ge__(self, other): #this only compares the function value
+        assert isinstance(other, AD_Object), "Input must be an AD_object"
+        return (self.val >= other.val)
+
