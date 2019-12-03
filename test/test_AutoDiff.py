@@ -100,11 +100,11 @@ def test_input_function_types():
 
 def test_input_label_types():
     x = 2
-    with pytest.raises(TypeError):
+    with pytest.raises(AssertionError):
         ad.AD_eval('3x+2', x, 2)
 
 def test_input_value_types():
-    with pytest.raises(TypeError):
+    with pytest.raises(AssertionError):
         ad.AD_eval('3x+2', 'x', '3')
         
 def test_division_by_zero():
