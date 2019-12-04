@@ -1,82 +1,91 @@
 import math
 import numpy as np
 
-#=====================================Math functions=====================================================#
+#=====================================Elementary functions=====================================================#
 
 def e(x):
-    try:
-        return math.exp(x)
-    except:
+    try: 
+        return np.exp(x)
+    except: 
         return x.exp()
-
-def ln(x):
-    try:
-        return math.log(x)
-    except:
-        return x.ln()
     
 def sin(x):
     try:
-        return math.sin(x)
+        return np.sin(x)
     except:
         return x.sin()
 
-def asin(x):
+def arcsin(x):
     try:
-        return math.asin(x)
+        return np.arcsin(x)
     except:
-        return x.asin()
+        return x.arcsin()
 
 def sinh(x):
     try:
-        return math.sinh(x)
+        return np.sinh(x)
     except:
         return x.sinh()
 
 def cos(x):
     try:
-        return math.cos(x)
+        return np.cos(x)
     except:
         return x.cos()
 
-def acos(x):
+def arccos(x):
     try:
-        return math.acos(x)
+        return np.arccos(x)
     except:
-        return x.acos()
+        return x.arccos()
 
 def cosh(x):
     try:
-        return math.cosh(x)
+        return np.cosh(x)
     except:
         return x.cosh()
 
 def tan(x):
     try:
-        return math.tan(x)
+        return np.tan(x)
     except:
         return x.tan()
 
-def atan(x):
+def arctan(x):
     try:
-        return math.atan(x)
+        return np.arctan(x)
     except:
-        return x.atan()
+        return x.arctan()
 
 def tanh(x):
     try:
-        return math.tanh(x)
+        return np.tanh(x)
     except:
         return x.tanh()
 
-def log(x, base):
+# def ln(x):
+#     try: 
+#         return np.log(x)
+#     except: 
+#         return x.ln()
+
+def log(x):
     try:
-        return math.log(x, base)
+        return np.log(x)
     except:
-        return x.log(base)
+        return x.log()
 
 def sigmoid(x, b_0=0, b_1=1):
-    return x.sigmoid(b_0, b_1)
+    try:
+        return (1 / (1+np.exp(-(b_0 + b_1*x))))
+    except:
+        return x.sigmoid(b_0, b_1)
+
+def sqrt(x):
+    try:
+        return np.sqrt(x)
+    except:
+        return x.sqrt()
 
 
 #=====================================AD_eval=====================================================#
@@ -292,7 +301,7 @@ class AD_Object():
         # in general, if f(x) = u(x)^v(x) -> f'(x) = u(x)^v(x) * [ln(u(x)) * v(x)]'
         if self.val == 0:
             return 0            
-        return self.val**other.val * other.productrule(self.ln(), key)
+        return self.val**other.val * other.productrule(self.log(), key)
 
     def __pow__(self, other):
         # when both self and other are autodiff object, implement the powerrule
@@ -316,57 +325,57 @@ class AD_Object():
         if other == 0:
             return AD_Object(other**self.val, self.label, {k: 0*self.der[k] for k in self.der})
         #------
-        return AD_Object(other**self.val, self.label, {k: (other**self.val * math.log(other) * self.der[k]) for k in self.der})
+        return AD_Object(other**self.val, self.label, {k: (other**self.val * np.log(other) * self.der[k]) for k in self.der})
 
     def sqrt(self):
-        return AD_Object(math.sqrt(self.val), self.label, {k: ( (1 / (2*math.sqrt(self.val)) ) * self.der[k]) for k in self.der})
+        return AD_Object(np.sqrt(self.val), self.label, {k: ( (1 / (2*np.sqrt(self.val)) ) * self.der[k]) for k in self.der})
 
     def exp(self):
-        return AD_Object(math.exp(self.val), self.label, {k: (math.exp(self.val) * self.der[k]) for k in self.der})
+        return AD_Object(np.exp(self.val), self.label, {k: (np.exp(self.val) * self.der[k]) for k in self.der})
 
-    def ln(self):
+    def log(self):
         if (self.val) <= 0:
             raise ValueError('log only takes positive number')
-        return AD_Object(math.log(self.val), self.label, {k: ((1/self.val)*self.der[k]) for k in self.der})
+        return AD_Object(np.log(self.val), self.label, {k: ((1/self.val)*self.der[k]) for k in self.der})
 
-    def log(self, base=math.e):
-        if (self.val) <= 0:
-            raise ValueError('log only takes positive number')
-        if base <= 0:
-            raise ValueError('log base must be a positive number')
-        return AD_Object(math.log(self.val, base), self.label, {k: ((1/(self.val*math.log(base)))*self.der[k]) for k in self.der})
+    # def log(self, base=math.e):
+    #     if (self.val) <= 0:
+    #         raise ValueError('log only takes positive number')
+    #     if base <= 0:
+    #         raise ValueError('log base must be a positive number')
+    #     return AD_Object(math.log(self.val, base), self.label, {k: ((1/(self.val*math.log(base)))*self.der[k]) for k in self.der})
 
     def sin(self):
-        return AD_Object(math.sin(self.val), self.label, {k: (math.cos(self.val) * self.der[k]) for k in self.der})
+        return AD_Object(np.sin(self.val), self.label, {k: (np.cos(self.val) * self.der[k]) for k in self.der})
 
-    def asin(self):
-        return AD_Object(math.asin(self.val), self.label, {k: ((1 / math.sqrt(1 - self.val**2)) * self.der[k]) for k in self.der})
+    def arcsin(self):
+        return AD_Object(np.arcsin(self.val), self.label, {k: ((1 / np.sqrt(1 - self.val**2)) * self.der[k]) for k in self.der})
 
     def sinh(self):
-        return AD_Object(math.sinh(self.val), self.label, {k: (math.cosh(self.val) * self.der[k]) for k in self.der})
+        return AD_Object(np.sinh(self.val), self.label, {k: (np.cosh(self.val) * self.der[k]) for k in self.der})
 
     def cos(self):
-        return AD_Object(math.cos(self.val), self.label, {k: (-1 * math.sin(self.val) * self.der[k]) for k in self.der})
+        return AD_Object(np.cos(self.val), self.label, {k: (-1 * np.sin(self.val) * self.der[k]) for k in self.der})
 
-    def acos(self):
-        return AD_Object(math.acos(self.val), self.label, {k: ((-1 / math.sqrt(1 - self.val**2)) * self.der[k]) for k in self.der})
+    def arccos(self):
+        return AD_Object(np.arccos(self.val), self.label, {k: ((-1 / np.sqrt(1 - self.val**2)) * self.der[k]) for k in self.der})
 
     def cosh(self):
-        return AD_Object(math.cosh(self.val), self.label, {k: (math.sinh(self.val) * self.der[k]) for k in self.der})
+        return AD_Object(np.cosh(self.val), self.label, {k: (np.sinh(self.val) * self.der[k]) for k in self.der})
 
     def tan(self):
-        return AD_Object(math.tan(self.val), self.label, {k: (self.der[k] / math.cos(self.val)**2) for k in self.der})
+        return AD_Object(np.tan(self.val), self.label, {k: (self.der[k] / np.cos(self.val)**2) for k in self.der})
 
-    def atan(self):
-        return AD_Object(math.atan(self.val), self.label, {k: ((1 / (1 + self.val**2)) * self.der[k]) for k in self.der})
+    def arctan(self):
+        return AD_Object(np.arctan(self.val), self.label, {k: ((1 / (1 + self.val**2)) * self.der[k]) for k in self.der})
 
     def tanh(self):
-        return AD_Object(math.tanh(self.val), self.label, {k: ((2 / (1 + math.cosh(2*self.val))) * self.der[k]) for k in self.der})
+        return AD_Object(np.tanh(self.val), self.label, {k: ((2 / (1 + np.cosh(2*self.val))) * self.der[k]) for k in self.der})
 
     def sigmoid(self, b_0=1, b_1=1):
         def calc_s(x, b_0, b_1):
             # Sigmoid/Logisitic = 1 / 1 + exp(- (b_0 + b_1*x))
-            return (1 / (1+math.exp(-(b_0 + b_1*x))))
+            return (1 / (1+np.exp(-(b_0 + b_1*x))))
         return AD_Object(calc_s(self.val, b_0, b_1), self.label, {k: ((calc_s(self.val, b_0, b_1)*(1-calc_s(self.val, b_0, b_1))) * self.der[k]) for k in self.der})
 
     def __eq__(self, other):
