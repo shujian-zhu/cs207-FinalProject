@@ -130,8 +130,8 @@ class AD_eval():
             # evaluate function using AD object
             self.f = eval(func_string.replace(variable_label, 'self.x'))
 
-        self.der = self.f.der
-        self.val = self.f.val
+            self.der = self.f.der
+            self.val = self.f.val
 
 
     def __repr__(self):
@@ -145,7 +145,7 @@ class AD_eval():
 
 #=====================================AD_Vector=====================================================#
 
-def AD_Vector(values, label):
+def AD_Vector(values, label): #Vector Input Values
     assert hasattr(values, '__iter__'), "Input values must be iterable"
     return np.array([AD_Object(float(val), label) for val in values])
 
@@ -153,7 +153,13 @@ def value(x):
     if isinstance(x, AD_Object):
         return x.val
     elif hasattr(x, '__iter__'):
-        return np.array([k.val for k in x])
+        try: #for single function with vector input values
+            return np.array([k.val for k in x])
+        except: #for vector function with vector input values
+            temp = []
+            for k in x:
+                temp.append([l.val for l in k])
+            return temp
     else:
         raise TypeError ("Input must be AD_Object or array of AD_Objects")
 
@@ -162,9 +168,23 @@ def derivative(x, label):
     if isinstance(x, AD_Object):
         return x.der[label]
     elif hasattr(x, '__iter__'):
-        return np.array([k.der[label] for k in x])
+        try: #for single function with vector input values
+            return np.array([k.der[label] for k in x])
+        except: #for vector function with vector input values
+            temp = []
+            for k in x:
+                temp.append([l.der[label] for l in k])
+            return temp
     else:
         raise TypeError ("Input must be AD_Object or array of AD_Objects")
+
+
+#=====================================AD_FuncVector=====================================================#
+
+def AD_FuncVector(func:list): #Vector Functions
+    assert hasattr(func, '__iter__'), "Input function must be iterable"
+    return [f for f in func]
+
 
 #=====================================AD_Object=====================================================#
 
@@ -418,3 +438,4 @@ class AD_Object():
     def __ge__(self, other): #this only compares the function value
         assert isinstance(other, AD_Object), "Input must be an AD_object"
         return (self.val >= other.val)
+
