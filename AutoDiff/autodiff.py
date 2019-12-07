@@ -4,88 +4,88 @@ import numpy as np
 #=====================================Elementary functions=====================================================#
 
 def e(x):
-    try: 
-        return np.exp(x)
-    except: 
-        return x.exp()
+    #try: 
+    return np.exp(x)
+    #except: 
+    #    return x.exp()
     
 def sin(x):
-    try:
-        return np.sin(x)
-    except:
-        return x.sin()
+    #try:
+    return np.sin(x)
+    #except:
+    #    return x.sin()
 
 def arcsin(x):
-    try:
-        return np.arcsin(x)
-    except:
-        return x.arcsin()
+    #try:
+    return np.arcsin(x)
+    #except:
+    #    return x.arcsin()
 
 def sinh(x):
-    try:
-        return np.sinh(x)
-    except:
-        return x.sinh()
+    #try:
+    return np.sinh(x)
+    #except:
+    #    return x.sinh()
 
 def cos(x):
-    try:
-        return np.cos(x)
-    except:
-        return x.cos()
+    #try:
+    return np.cos(x)
+    #except:
+    #    return x.cos()
 
 def arccos(x):
-    try:
-        return np.arccos(x)
-    except:
-        return x.arccos()
+    #try:
+    return np.arccos(x)
+    #except:
+    #    return x.arccos()
 
 def cosh(x):
-    try:
-        return np.cosh(x)
-    except:
-        return x.cosh()
+    #try:
+    return np.cosh(x)
+    #except:
+    #   return x.cosh()
 
 def tan(x):
-    try:
-        return np.tan(x)
-    except:
-        return x.tan()
+    #try:
+    return np.tan(x)
+    #except:
+    #    return x.tan()
 
 def arctan(x):
-    try:
-        return np.arctan(x)
-    except:
-        return x.arctan()
+    #try:
+    return np.arctan(x)
+    #except:
+    #    return x.arctan()
 
 def tanh(x):
-    try:
-        return np.tanh(x)
-    except:
-        return x.tanh()
+    #try:
+    return np.tanh(x)
+    #except:
+    #    return x.tanh()
 
-# def ln(x):
+#def ln(x):
 #     try: 
 #         return np.log(x)
 #     except: 
 #         return x.ln()
 
 def log(x):
-    try:
-        return np.log(x)
-    except:
-        return x.log()
+    #try:
+    return np.log(x)
+    #except:
+    #   return x.log()
 
 def sigmoid(x, b_0=0, b_1=1):
-    try:
-        return (1 / (1+np.exp(-(b_0 + b_1*x))))
-    except:
-        return x.sigmoid(b_0, b_1)
+    #try:
+    return (1 / (1+np.exp(-(b_0 + b_1*x))))
+    #except:
+    #    return x.sigmoid(b_0, b_1)
 
 def sqrt(x):
-    try:
-        return np.sqrt(x)
-    except:
-        return x.sqrt()
+    #try:
+    return np.sqrt(x)
+    #except:
+    #    return x.sqrt()
 
 
 #=====================================AD_eval=====================================================#
@@ -117,6 +117,7 @@ class AD_eval():
             self.f = eval(func_string)
             self.der = self.f.der
             self.val = self.f.val
+            self.label = variable_label
 
         else:
             assert isinstance(variable_label, str), "Variable label must be a string"
@@ -132,6 +133,7 @@ class AD_eval():
 
             self.der = self.f.der
             self.val = self.f.val
+            self.label = variable_label
 
 
     def __repr__(self):
@@ -330,12 +332,20 @@ class AD_Object():
             der = dict()
             label = dict()
             for key in self.der:
-                der[key] = self.powerrule(other, key)
-                label[key] = self.label[key] 
+                if key in other.label:
+                    der[key] = self.powerrule(other, key)
+                    label[key] = self.label[key]
+                else:
+                    der[key] = other.val * (self.val ** other.val - 1) * self.der[key]
+                    
             for key in other.der:
-                if key not in der:
-                    der[key] =  other.powerrule(self, key)
-                    label[key] = other.label[key]
+                if key in der:
+                    continue # skip the variables already in der{}
+                # The following code will only be run when ohter.key not in self.key 
+                # for example: f = x ** y 
+                der[key] = self.val**other.val * np.log(self.val) #k^x -> k^x * ln(k)
+                label[key] = other.label[key]
+                
             return AD_Object(value, label, der)
         # when the input for 'other' is a constant
         return AD_Object(self.val**other, self.label, {k: (other * (self.val ** (other-1)) * self.der[k]) for k in self.der})
