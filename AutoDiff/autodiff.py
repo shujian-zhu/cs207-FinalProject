@@ -149,7 +149,10 @@ class AD_eval():
 
 def AD_Vector(values, label): #Vector Input Values
     assert hasattr(values, '__iter__'), "Input values must be iterable"
-    return np.array([AD_Object(float(val), label) for val in values])
+    if type(label)==str :
+        return np.array([AD_Object(float(val), label) for val in values])
+    else :
+        return np.array([AD_Object(float(val), label[i]) for i,val in enumerate(values)])
 
 def value(x):
     if isinstance(x, AD_Object):
@@ -180,15 +183,29 @@ def derivative(x, label):
     else:
         raise TypeError ("Input must be AD_Object or array of AD_Objects")
 
+def jacobian(x,label):
+    if isinstance(x, AD_Object):
+        return x.der
+    elif hasattr(x, '__iter__'):
+        jacob=[]
+        for k in x :
+            df_i = []
+            for l in label :
+                try :
+                    df_i.append(k.der[l])
+                except :
+                    df_i.append(0)
+            jacob.append(np.array(df_i))
+        return np.array(jacob)
 
-#=====================================AD_FuncVector=====================================================#
+    else:
+        raise TypeError ("Input must be AD_Object or array of AD_Objects")
+
 
 def AD_FuncVector(func:list): #Vector Functions
     assert hasattr(func, '__iter__'), "Input function must be iterable"
     return [f for f in func]
 
-
-#=====================================AD_Object=====================================================#
 
 class AD_Object():
     def __init__(self, value, label, der_initial=1):
