@@ -1,4 +1,4 @@
-import autodiff as ad
+import AutoDiff as ad
 
 def gradient_descent(func_lambda, init_value, step_size=0.001, precision=1e-3, max_steps=1e6, history=False):
     try :
