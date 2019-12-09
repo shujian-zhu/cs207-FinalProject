@@ -185,10 +185,12 @@ def derivative(x, label):
 
 def jacobian(x,label):
     if isinstance(x, AD_Object):
-        return x.der
+        return np.array(list(x.der.values()))
     elif hasattr(x, '__iter__'):
         jacob=[]
         for k in x :
+            if not isinstance(k, AD_Object):
+                raise TypeError ("Input must be AD_Object or array of AD_Objects")
             df_i = []
             for l in label :
                 try :
@@ -197,7 +199,6 @@ def jacobian(x,label):
                     df_i.append(0)
             jacob.append(np.array(df_i))
         return np.array(jacob)
-
     else:
         raise TypeError ("Input must be AD_Object or array of AD_Objects")
 
