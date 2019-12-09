@@ -1,5 +1,5 @@
 import numpy as np
-import autodiff as ad
+import AutoDiff as ad
 
 
 def newton_method(func_lambda, init_value, precision=1e-6,max_steps=10000):
