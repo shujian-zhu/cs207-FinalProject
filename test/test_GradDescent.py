@@ -1,7 +1,7 @@
 import math
 import pytest
 import numpy as np
-import matplotlib.pyplot as plt
+
 from AutoDiff import autodiff as ad
 from AutoDiff import gradient_descent
 
