@@ -176,6 +176,18 @@ def test_sqrt():
     assert (ad0.derivative('x'), ad0.val) == (1/4,2)
     assert (ad1.der['x'], ad1.val) == (1/4,2)
     
+def test_jacobian():
+    ad1 = ad.AD_Object(1,'x', 2)
+    ad2 = ad.AD_Object(1, {'x':'x', 'y':'y'},{'x':4, 'y':5})
+    ad3 = ad.AD_Object(1, {'x':'x', 'y':'y'},{'x':6, 'y':7})\
+    
+    assert ad.jacobian(ad1, ['x']) == [2]
+    res = ad.jacobian([ad1, ad2, ad3], ['x','y'])
+    print(np.sum(res - np.array([[2, 0],[4,5],[6,7]])))
+    assert np.sum(res - np.array([[2, 0],[4,5],[6,7]])) == 0
+    with pytest.raises(TypeError):
+        ad.jacobian(res, 'x')
+    
 
 
 ############ Test AD_eval class assertions ################
@@ -220,7 +232,7 @@ def test_AD_Vector():
 def test_AD_Vector2():
     x = ad.AD_Vector(np.arange(1,5), label='x')
     y = ad.AD_Vector(np.arange(1,5), label='y')
-    z = [2*x + ad.e(y),x**2*y]
+    z = AD_FuncVector([2*x + ad.e(y),x**2*y]) 
     assert ad.value(z) == [[2+np.exp(1), 4+np.exp(2), 6+np.exp(3), 8+np.exp(4)],[1,8,27,64]]
     assert ad.derivative(z, 'x') == [[2,2,2,2], [2,8,18,32]]
     assert ad.derivative(z, 'y') == [[np.exp(1), np.exp(2), np.exp(3), np.exp(4)],[1,4,9,16]]

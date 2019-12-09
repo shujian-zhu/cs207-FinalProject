@@ -102,3 +102,53 @@ def secant_method(func_lambda,x0,x1, tol=1e-6,max_steps=10000):
 
     return xn2
 
+def broyden_method(func_lambda,init_value, J=None,use_der_for_init=True, tol=1e-12,max_steps=10000):
+    # Change f in order to accept f(array) AND f(float,float,...,float)
+    try:
+        func_lambda(init_value)
+        func = func_lambda
+    except:
+        try:
+            func = lambda arg: func_lambda(*arg)
+            func(init_value)
+        except Exception as e:
+            return ("Function and Init_values do not match")
+
+    counter=0
+
+    assert isinstance(init_value,(list,np.ndarray)), ("Use secant_method for one-dimension function")
+    new_value=1.0*np.array(init_value)
+
+    if use_der_for_init:
+        import autodiff as ad
+        label = ['x%s' % i for i in range(len(init_value))]
+        try :
+            f = func(ad.AD_Object(init_value, label=label))
+        except :
+            try :
+                f = func(*ad.AD_Vector(init_value, label=label))
+            except:
+                f = func(ad.AD_Vector(init_value, label=label))
+        J=ad.jacobian(f,label=label)
+    elif J is None :
+        J=np.identity(len(new_value))
+
+    while np.linalg.norm(func(new_value),2)> tol and counter<max_steps:
+        try :
+            print(J)
+            counter+=1
+            delta_values=-np.dot(np.linalg.pinv(J),func(new_value))
+            delta_func=np.array(func(new_value+delta_values))-np.array(func(new_value))
+            new_value +=delta_values
+            J+=(1/np.sum(new_value**2))*delta_func-np.dot(np.linalg.pinv(J),delta_values)**delta_values.reshape(-1,1)
+        except :
+            raise ValueError("Could not converge")
+    if counter==max_steps :
+        msg = (
+                " Failed to converge after %d iterations, value is %s."
+                % (max_steps, func(new_value)))
+        raise RuntimeError(msg)
+
+    return new_value
+
+
