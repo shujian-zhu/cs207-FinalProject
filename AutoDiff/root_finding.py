@@ -120,7 +120,7 @@ def broyden_method(func_lambda,init_value, J=None,use_der_for_init=True, tol=1e-
     new_value=1.0*np.array(init_value)
 
     if use_der_for_init:
-        import autodiff as ad
+        #import autodiff as ad
         label = ['x%s' % i for i in range(len(init_value))]
         try :
             f = func(ad.AD_Object(init_value, label=label))
@@ -135,20 +135,19 @@ def broyden_method(func_lambda,init_value, J=None,use_der_for_init=True, tol=1e-
 
     while np.linalg.norm(func(new_value),2)> tol and counter<max_steps:
         try :
-            print(J)
             counter+=1
             delta_values=-np.dot(np.linalg.pinv(J),func(new_value))
             delta_func=np.array(func(new_value+delta_values))-np.array(func(new_value))
             new_value +=delta_values
-            J+=(1/np.sum(new_value**2))*delta_func-np.dot(np.linalg.pinv(J),delta_values)**delta_values.reshape(-1,1)
-        except :
+            J=np.add(J,(1/np.sum(new_value**2))*(delta_func-np.dot(J,delta_values))*delta_values.reshape(-1,1),casting='unsafe')
+        except Exception as e:
+            print(e)
             raise ValueError("Could not converge")
     if counter==max_steps :
         msg = (
                 " Failed to converge after %d iterations, value is %s."
                 % (max_steps, func(new_value)))
         raise RuntimeError(msg)
-
     return new_value
 
 
