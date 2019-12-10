@@ -102,7 +102,7 @@ def secant_method(func_lambda,x0,x1, tol=1e-6,max_steps=10000):
 
     return xn2
 
-def broyden_method(func_lambda,init_value, J=None,use_der_for_init=True, tol=1e-12,max_steps=10000):
+def broyden_method(func_lambda,init_value, J=None,use_der_for_init=True, tol=1e-6,max_steps=10000):
     # Change f in order to accept f(array) AND f(float,float,...,float)
     try:
         func_lambda(init_value)
@@ -120,7 +120,6 @@ def broyden_method(func_lambda,init_value, J=None,use_der_for_init=True, tol=1e-
     new_value=1.0*np.array(init_value)
 
     if use_der_for_init:
-        #import autodiff as ad
         label = ['x%s' % i for i in range(len(init_value))]
         try :
             f = func(ad.AD_Object(init_value, label=label))
