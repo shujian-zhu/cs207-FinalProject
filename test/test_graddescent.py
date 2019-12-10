@@ -17,7 +17,7 @@ def test_graddescent_2D():
 	Loss_function = lambda l1, l2:L(l1, l2, x, y)
 	init_value=[2,2]
 	precision = 1e-3
-	range_result1 = [2.45-precision, 2.45+precision]
+	range_result1 = [2.48-precision, 2.48+precision]
 	range_result2 = [0-precision, 0+precision]
 	assert (gradient_descent(Loss_function, init_value, precision=precision)[0][0] >= range_result1[0]) or (gradient_descent(Loss_function, init_value, precision=precision)[0][0] <= range_result1[1])
 	assert (gradient_descent(Loss_function, init_value, precision=precision)[0][1] >= range_result2[0]) or (gradient_descent(Loss_function, init_value, precision=precision)[0][1] <= range_result2[1])
@@ -29,6 +29,6 @@ def test_stoch():
 	y=np.array([-i if i%2 else -i-1 for i in range(-10000,10001)]+[i if i%2 else i-1 for i in range(-10000,10001)])/100
 	init_value=[2,2]
 	Loss_function_bis = lambda init_value,x ,y :L(init_value[0],init_value[1],x,y)
-	assert (stochastic_gradient_descent(Loss_function_bis, init_value,x ,y)[0][0] <= 2.45) or (stochastic_gradient_descent(Loss_function_bis, init_value,x ,y)[0][0] >= 2.0)
+	assert (stochastic_gradient_descent(Loss_function_bis, init_value,x ,y)[0][0] <= 2.48+0.05) or (stochastic_gradient_descent(Loss_function_bis, init_value,x ,y)[0][0] >= 2.48-0.05)
 
 
