@@ -1,2 +1,5 @@
 .ipynb_checkpoints
 *.pyc
+/build/*
+/dist/*
+/AutoDiff_CS207_24.egg-info/*
